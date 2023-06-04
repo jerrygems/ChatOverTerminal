@@ -19,10 +19,10 @@ nc <IP_ADDRESS> <PORT>
 - **then you’ll be asked for passphrase that is COT by default (”passphrase can be changed for your convenience”)**
 - **And then you’ll be connected**
 
-![img1](https://user-images.githubusercontent.com/jerrygems/repo/master/src/win1.png)
+![img1](https://githubusercontent.com/jerrygems/repo/master/src/win1.png)
 
-![img2](https://user-images.githubusercontent.com/jerrygems/repo/master/src/win2.png)
+![img2](https://githubusercontent.com/jerrygems/repo/master/src/win2.png)
 
-![img3](https://user-images.githubusercontent.com/jerrygems/repo/master/src/win3.png)
+![img3](https://githubusercontent.com/jerrygems/repo/master/src/win3.png)
 
-![img4](https://user-images.githubusercontent.com/jerrygems/repo/master/src/win4.png)
+![img4](https://githubusercontent.com/jerrygems/repo/master/src/win4.png)

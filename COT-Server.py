@@ -1,6 +1,5 @@
 import socket
 import threading
-import random
 
 
 
@@ -26,13 +25,13 @@ UNDERLINE = "\033[4m"
 RESET = "\033[0m"
 
 
-PORT = random.randint(1000, 9999)
-print(f"PORT:{PORT}")
 #clients list
 client_list = []
 lock = threading.Lock()
 
 #create socket and bind
+PORT = 4444
+print(f"PORT:{PORT}")
 HOST = '127.0.0.1'
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 sock.bind((HOST,PORT))

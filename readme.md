@@ -19,6 +19,7 @@ nc <IP_ADDRESS> <PORT>
 - **then you’ll be asked for passphrase that is COT by default (”passphrase can be changed for your convenience”)**
 - **And then you’ll be connected**
 
+
 ![img1](src/win1.png)
 
 ![img2](src/win2.png)

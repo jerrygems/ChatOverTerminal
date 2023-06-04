@@ -90,7 +90,6 @@ def client_handler(client_sock,client_addr):
 		
 
 	while True:
-		
 		try:
 			client_sock.sendall(f"{GREEN}{received_uname}@CYBER_SOCIETY => {RESET}".encode())
 			data = client_sock.recv(1024)
@@ -109,6 +108,14 @@ while True:
 	try:
 		client_sock, client_addr = sock.accept()
 		print(f"Connected to {client_sock}")
+		client_sock.sendall(f"""{RED}
+   ___ _           _       ___                   _____                    _             _ 
+  / __\ |__   __ _| |_    /___\__   _____ _ __  /__   \___ _ __ _ __ ___ (_)_ __   __ _| |
+ / /  | '_ \ / _` | __|  //  //\ \ / / _ \ '__|   / /\/ _ \ '__| '_ ` _ \| | '_ \ / _` | |
+/ /___| | | | (_| | |_  / \_//  \ V /  __/ |     / / |  __/ |  | | | | | | | | | | (_| | |
+\____/|_| |_|\__,_|\__| \___/    \_/ \___|_|     \/   \___|_|  |_| |_| |_|_|_| |_|\__,_|_|
+                                                                                          
+			\n{RESET}""".encode())
 
 		client_thread = threading.Thread(target=client_handler, args=(client_sock, client_addr))
 		client_thread.start()

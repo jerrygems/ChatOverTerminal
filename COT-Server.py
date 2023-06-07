@@ -69,7 +69,7 @@ def MSG_Spreader(msg,senders_socket,senders_addr,senders_uname):
 def authenticator(client_sock):
 	client_sock.sendall(f"{GREEN}[ENTER YOUR PASSPHRASE] => {RESET}".encode())
 	client_pass = client_sock.recv(1024).decode().strip()
-	if client_pass == "ls":
+	if client_pass == "COT":
 		client_sock.sendall(f"{GREEN}Password Accepted{RESET}\n".encode())
 		return True
 	else:

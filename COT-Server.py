@@ -1,7 +1,7 @@
 import socket
 import threading
-
-
+import random
+from collections import deque
 
 BLACK = "\033[30m"
 RED = "\033[31m"
@@ -29,8 +29,11 @@ RESET = "\033[0m"
 client_list = []
 lock = threading.Lock()
 
+#message_history
+message_history = deque(maxlen=100)
+
 #create socket and bind
-PORT = 4444
+PORT = random.randint(4444,9999)
 print(f"PORT:{PORT}")
 HOST = '127.0.0.1'
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -43,63 +46,78 @@ print("server started listening for connections\n[LISTENING...]")
 def MSG_Spreader(msg,senders_socket,senders_addr,senders_uname):
 	with lock:
 		try:
+			print("worked")
+			prompt = f"{senders_uname if senders_uname else senders_addr}@CYBER_SOCIETY => {msg}"
+			message_history.append(prompt)
 			for client in client_list:
-				if client["socket"] != senders_socket:
+				print("workedd")
+				if client["socket"] != senders_socket and client["client-name"] and client["authorized"]:
 					client_sock = client["socket"]
-					client_username = client["username"]
-					prompt = f"{senders_uname if senders_uname else senders_addr}@CYBER_SOCIETY => {msg}"
-					client_prompt = f"\r{prompt}\n{GREEN}{client_username}@CYBER_SOCIETY => {RESET}"
-					client_sock.sendall(client_prompt.encode())
+					client_username = client["client-name"]
+					if client_sock != senders_socket:
+						client_prompt = f"\r{prompt}\n{GREEN}{client_username}@CYBER_SOCIETY => {RESET}"
+						client_sock.sendall(client_prompt.encode())
+					elif not client["authorized"]:
+						# Send message history to the newly connected client
+						for message in message_history:
+							client_sock.sendall(message.encode())
+						client["authorized"] = True
+
 		except Exception as e:
 			print(f"{RED}[EXCEPTION HAS OCCURRED: while broadcasting]{e}{RESET}")
 
+def authenticator(client_sock):
+	client_sock.sendall(f"{GREEN}[ENTER YOUR PASSPHRASE] => {RESET}".encode())
+	client_pass = client_sock.recv(1024).decode().strip()
+	if client_pass == "ls":
+		client_sock.sendall(f"{GREEN}Password Accepted{RESET}\n".encode())
+		return True
+	else:
+		client_sock.sendall(f"{GREEN}Password Denied{RESET}\n".encode())
+		return False
+
+
+def isNameAvailable(arg1):
+	for client in client_list:
+		if client["client-name"] == arg1:
+			return False
+	return True
+
 def client_handler(client_sock,client_addr):
-	with lock:
-		client_list.append({"socket":client_sock,"username":None})
-	auth = False
-	received_uname=None
-	while not auth:
-		client_sock.sendall(f"{GREEN}[ENTER YOUR USERNAME] => {RESET}".encode())
-		received_uname = client_sock.recv(1024).decode().strip()
-		try:
-			if any(user["username"] == received_uname for user in client_list):
-				client_sock.sendall(f"{GREEN}[USERNAME ALREADY TAKEN] {RESET}".encode())
-				received_uname=None
-			else:
+
+	client_name=None
+	client_sock.sendall(f"{GREEN}[ENTER YOUR USERNAME] => {RESET}".encode())
+	client_name = client_sock.recv(1024).decode().strip()
+	if len(client_name) <= 30:
+		if isNameAvailable(client_name):
+			with lock:
+				client_list.append({"socket":client_sock,"client-name":client_name,"authorized":True})
+
+			for message in message_history:
+				client_sock.sendall(message.encode())
+
+			while True:
 				try:
-					for client in client_list:
-						if client["socket"]==client_sock:
-							client["username"] = received_uname
+					#implementations
+					client_sock.sendall(f"{GREEN}{client_name}@CYBER_SOCIETY => {RESET}".encode())
+					data = client_sock.recv(1024)
+					if not data:
+						break
 
-					var1 = f"{GREEN}[YOUR USERNAME IS {received_uname}]{RESET}\n"
-					client_sock.sendall(var1.encode())
+					msg = data.decode()
+					print(f"{client_name}@CYBER_SOCIETY =>{msg}")
 
-					client_sock.sendall(f"{GREEN}[ENTER THE PASSPHRASE FOR GROUP] => {RESET}".encode())
-					received_pass = client_sock.recv(1024).decode().strip()
-					if received_pass == "COT":
-						auth = True
-						client_sock.sendall(f"{GREEN}Password Accepted{RESET}\n".encode())
-					else:
-						client_sock.sendall(f"{GREEN}Password Incorrect, Please Enter The Correct PASSWORD{RESET}\n".encode())
+					if msg.strip()=="$exit":
+						break
+					
+					MSG_Spreader(msg,client_sock,client_addr,client_name)
 				except Exception as e:
-					print(f"{RED}[EXCEPTION HAS OCCURRED: while handling else part condition]{e}{RESET}")
-
-		except Exception as e:
-			print(f"{RED}[EXCEPTION HAS OCCURRED: while handling]{e}{RESET}")
-		
-
-	while True:
-		try:
-			client_sock.sendall(f"{GREEN}{received_uname}@CYBER_SOCIETY => {RESET}".encode())
-			data = client_sock.recv(1024)
-			if not data:
-				break
-			msg = data.decode()
-			print(f"{received_uname}@CYBER_SOCIETY =>{msg}")
-			
-			MSG_Spreader(msg,client_sock,client_addr,received_uname)
-		except Exception as e:
-			print(f"{RED}[EXCEPTION HAS OCCURRED: in While loop after authentication stuff]{e}{RESET}")
+					print(f"{RED}[EXCEPTION HAS OCCURRED: in While loop after username stuff]{e}{RESET}")
+		else:
+			client_sock.sendall(f"{RED}[SORRY BUT USERNAME NOT AVAILABLE]{RESET}".encode())
+	else:
+		client_sock.sendall(f"{RED}[USERNAME WITH MORE THAN 30 LETTERS ARE NOT ALLOWED]{RESET}".encode())
+	client_sock.close()
 		
 #here is the main stuff
 
@@ -115,8 +133,12 @@ while True:
 \____/|_| |_|\__,_|\__| \___/    \_/ \___|_|     \/   \___|_|  |_| |_| |_|_|_| |_|\__,_|_|
                                                                                           
 			\n{RESET}""".encode())
-
-		client_thread = threading.Thread(target=client_handler, args=(client_sock, client_addr))
-		client_thread.start()
+		isAuth = authenticator(client_sock)
+		if isAuth:
+			client_thread = threading.Thread(target=client_handler, args=(client_sock, client_addr))
+			client_thread.start()
+		else:
+			print(f"authentication failed {client_sock}")
+			client_sock.close()
 	except Exception as e:
 			print(f"{RED}[EXCEPTION HAS OCCURRED: in while loop that was for accepting connections]{e}{RESET}")

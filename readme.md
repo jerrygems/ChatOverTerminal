@@ -6,7 +6,7 @@
 
 ## Steps for using it ;-)
 
-- **wget [https://github.com/jerrygems/ChatOverTerminal.git](https://github.com/jerrygems/ChatOverTerminal.git)**
+- ```git clone [https://github.com/jerrygems/ChatOverTerminal.git](https://github.com/jerrygems/ChatOverTerminal.git)```
 - **Host it on the server**
 - **Run the COT-server.py**
 - **Use NETCAT to connect with it and same steps for your friends**

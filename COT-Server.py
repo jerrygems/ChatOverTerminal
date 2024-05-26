@@ -1,6 +1,5 @@
 import socket
 import threading
-import random
 from collections import deque
 
 BLACK = "\033[30m"
@@ -33,7 +32,7 @@ lock = threading.Lock()
 message_history = deque(maxlen=100)
 
 #create socket and bind
-PORT = random.randint(4444,9999)
+PORT = 4444
 print(f"PORT:{PORT}")
 HOST = '127.0.0.1'
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
